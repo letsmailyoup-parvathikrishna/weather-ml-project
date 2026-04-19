@@ -84,3 +84,50 @@ print(cm)
 
 # Sample predictions
 print("\nSample Predictions:", y_pred[:5])
+
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import cross_val_score, GridSearchCV
+import pandas as pd
+
+lr = LogisticRegression(max_iter=200)
+dt = DecisionTreeClassifier(random_state=42)
+rf = RandomForestClassifier(random_state=42)
+
+lr.fit(X_train, y_train)
+dt.fit(X_train, y_train)
+rf.fit(X_train, y_train)
+
+print("Logistic Regression:", lr.score(X_test, y_test))
+print("Decision Tree:", dt.score(X_test, y_test))
+print("Random Forest:", rf.score(X_test, y_test))
+
+lr_cv = cross_val_score(lr, X, y, cv=5)
+dt_cv = cross_val_score(dt, X, y, cv=5)
+rf_cv = cross_val_score(rf, X, y, cv=5)
+
+print("LR CV:", lr_cv.mean())
+print("DT CV:", dt_cv.mean())
+print("RF CV:", rf_cv.mean())
+
+param_grid = {
+    'n_estimators': [50, 100],
+    'max_depth': [None, 5, 10]
+}
+
+grid = GridSearchCV(RandomForestClassifier(), param_grid, cv=3)
+grid.fit(X_train, y_train)
+
+print("Best Parameters:", grid.best_params_)
+print("Best Score:", grid.best_score_)
+
+importance = rf.feature_importances_
+
+feature_importance = pd.DataFrame({
+    'Feature': X.columns,
+    'Importance': importance
+}).sort_values(by='Importance', ascending=False)
+
+print(feature_importance)
