@@ -1,4 +1,4 @@
-# Weather Dataset Preprocessing
+# Weather Dataset Preprocessing + ML Model
 
 import pandas as pd
 import numpy as np
@@ -18,7 +18,6 @@ print(df.describe())
 print("\nColumn Names:")
 print(df.columns)
 
-# Handling missing values
 print("\nMissing values before cleaning:")
 print(df.isnull().sum())
 
@@ -27,23 +26,32 @@ df = df.dropna()
 print("\nMissing values after cleaning:")
 print(df.isnull().sum())
 
-# Encoding categorical data
+
+df['Date'] = pd.to_datetime(df['Date'])
+
+df['Year'] = df['Date'].dt.year
+df['Month'] = df['Date'].dt.month
+df['Day'] = df['Date'].dt.day
+
+df = df.drop('Date', axis=1)
+
+
 from sklearn.preprocessing import LabelEncoder
 
-le = LabelEncoder()
+categorical_cols = ['City', 'State', 'AQI_Category']
 
-for col in df.columns:
-    if df[col].dtype == 'object':
-        df[col] = le.fit_transform(df[col])
+for col in categorical_cols:
+    le = LabelEncoder()
+    df[col] = le.fit_transform(df[col])
 
 print("\nData after encoding:")
 print(df.head())
 
-# Splitting dataset
+
 from sklearn.model_selection import train_test_split
 
-X = df.iloc[:, :-1]
-y = df.iloc[:, -1]
+y = df['AQI_Category']
+X = df.drop('AQI_Category', axis=1)
 
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
@@ -52,7 +60,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 print("\nTraining data shape:", X_train.shape)
 print("Testing data shape:", X_test.shape)
 
-# Feature scaling
+
 from sklearn.preprocessing import StandardScaler
 
 scaler = StandardScaler()
@@ -62,27 +70,26 @@ X_test = scaler.transform(X_test)
 
 print("\nData preprocessing completed successfully!")
 
-# Model training
+
 from sklearn.linear_model import LogisticRegression
 
-model = LogisticRegression(max_iter=200)
+model = LogisticRegression(max_iter=300)
 model.fit(X_train, y_train)
 
-# Predictions
+
 y_pred = model.predict(X_test)
 
-# Accuracy
+
 accuracy = model.score(X_test, y_test)
 print("\nModel Accuracy: {:.2f}%".format(accuracy * 100))
 
-# Confusion Matrix
+
 from sklearn.metrics import confusion_matrix
 
 cm = confusion_matrix(y_test, y_pred)
 print("\nConfusion Matrix:")
 print(cm)
 
-# Sample predictions
 print("\nSample Predictions:", y_pred[:5])
 
 
